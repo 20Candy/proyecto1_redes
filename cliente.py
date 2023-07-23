@@ -16,12 +16,13 @@ class Cliente(slixmpp.ClientXMPP):
         self.name = jid.split('@')[0]
         self.is_connected = False
 
-        
+        #Handlers de eventos
         self.add_event_handler('session_start', self.start)
         self.add_event_handler('subscription_request', self.accept_subscription)
         self.add_event_handler('message', self.chat_recived)
 
 
+    #Fucniones handler de eventos =========================================================================================================================================
     async def accept_subscription(self, presence):
         if presence['type'] == 'subscribe':
             # Automatically accept the subscription request
@@ -42,13 +43,7 @@ class Cliente(slixmpp.ClientXMPP):
             else:
                 print(f'You have a new message from {user}')
 
-    def send_message_p_g(self, to, message = '', typeM = "chat"):
-
-        self.send_message(
-            mto=to,
-            mbody=message,
-            mtype=typeM
-		)
+    # Funciones asincronas ================================================================================================================================================
 
     async def change_presece(self):
         status, status_message = utils.get_status()
@@ -131,17 +126,21 @@ class Cliente(slixmpp.ClientXMPP):
 
             
     async def send_message_to_contact(self):
-        jid_to_send = input("Ingresa el JID del usuario/contacto al que deseas enviar un mensaje: ")
-        message = input("Ingresa tu mensaje: ")
 
-        try:
-            self.send_message(mto=jid_to_send, mbody=message, mtype='chat')
-            print(f"Mensaje enviado a {jid_to_send}: {message}")
-            await self.get_roster()
-        except IqError as e:
-            print(f"Error sending the message: {e.iq['error']['text']}")
-        except IqTimeout:
-            print("No response from server.")
+        jid = await ainput('Ingrasa el JID del usairio\n')
+        self.actual_chat = jid
+        await aprint(f'===================== Bienvendio al chat con {jid.split("@")[0]} =====================')
+        await aprint('*Para salir, por favor presiona x')
+        chatting = True
+        while chatting:
+            message = await ainput('')
+            if message == 'exit':
+                chatting = False
+                self.actual_chat = ''
+            else:
+                self.send_message(mto=jid, mbody=message, mtype='chat')
+
+    # Funcion principal =================================================================================================================================================
     
     async def start(self, event):
         try:
@@ -156,36 +155,26 @@ class Cliente(slixmpp.ClientXMPP):
                 utils.mostrar_submenu()
                 opcion = input("\nIngresa tu opción: ")
 
+                #Funcion para mostrar todos los contactos y su estado =======================================================================================================
                 if opcion == "1":
                     print("Opción 1 seleccionada: Mostrar todos los contactos y su estado")
                     await self.show_contacts_status()
 
+                #Funcion para agregar un usuario a los contactos ==============================================================================================================
                 elif opcion == "2":
                     print("Opción 2 seleccionada: Agregar un usuario a los contactos")
                     await self.add_contact()
 
+                #Funcion para mostrar detalles de contacto de un usuario =======================================================================================================
                 elif opcion == "3":
                     print("Opción 3 seleccionada: Mostrar detalles de contacto de un usuario")
                     await self.show_contact_details()
 
+                #Funcion para comunicacion 1 a 1 con cualquier usuario/contacto =================================================================================================
                 elif opcion == "4":
                     print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
+                    await self.send_message_to_contact()
                     
-
-                    jid = await ainput('Enter the JID of the user:\n>')
-                    self.actual_chat = jid
-                    await aprint(f'===================== Welcom to the chat with {jid.split("@")[0]} =====================')
-                    await aprint('To exit the chat, type "exit" and then press enter')
-                    chatting = True
-                    while chatting:
-                        message = await ainput('')
-                        if message == 'exit':
-                            chatting = False
-                            self.actual_chat = ''
-                        else:
-                            self.send_message_p_g(jid, message)
-                            await asyncio.sleep(0.5) # wait 0.5 seconds to make sure the message was sent
-
                 elif opcion == "5":
                     print("Opción 5 seleccionada: Participar en conversaciones grupales")
                     print("PENDIENTE")
