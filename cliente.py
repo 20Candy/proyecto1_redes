@@ -15,6 +15,20 @@ class Cliente(slixmpp.ClientXMPP):
 
         
         self.add_event_handler('session_start', self.start)
+        self.add_event_handler('subscription_request', self.accept_subscription)
+
+    async def accept_subscription(self, presence):
+        if presence['type'] == 'subscribe':
+            # Automatically accept the subscription request
+            try:
+                self.send_presence_subscription(pto=presence['from'], ptype='subscribed')
+                await self.get_roster()
+                print(f"Accepted subscription request from {presence['from']}")
+            except IqError as e:
+                print(f"Error accepting subscription request: {e.iq['error']['text']}")
+            except IqTimeout:
+                print("No response from server.")
+
 
     async def change_presece(self):
         status, status_message = utils.get_status()
@@ -103,6 +117,7 @@ class Cliente(slixmpp.ClientXMPP):
         try:
             self.send_message(mto=jid_to_send, mbody=message, mtype='chat')
             print(f"Mensaje enviado a {jid_to_send}: {message}")
+            await self.get_roster()
         except IqError as e:
             print(f"Error sending the message: {e.iq['error']['text']}")
         except IqTimeout:
@@ -136,7 +151,6 @@ class Cliente(slixmpp.ClientXMPP):
                 elif opcion == "4":
                     print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
                     await self.send_message_to_contact()
-
 
                 elif opcion == "5":
                     print("Opción 5 seleccionada: Participar en conversaciones grupales")
