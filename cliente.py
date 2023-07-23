@@ -41,7 +41,7 @@ class Cliente(slixmpp.ClientXMPP):
             if user == self.actual_chat.split('@')[0]:
                 print(f'{user}: {message["body"]}')
             else:
-                print(f'You have a new message from {user}')
+                print(f'Tienes un nuevo mensaje de{user}')
 
     # Funciones asincronas ================================================================================================================================================
 
@@ -129,7 +129,7 @@ class Cliente(slixmpp.ClientXMPP):
 
         jid = await ainput('Ingrasa el JID del usairio\n')
         self.actual_chat = jid
-        await aprint(f'===================== Bienvendio al chat con {jid.split("@")[0]} =====================')
+        await aprint('\n===================== Espacio de chat {jid.split("@")[0]} =====================')
         await aprint('*Para salir, por favor presiona x')
         chatting = True
         while chatting:
