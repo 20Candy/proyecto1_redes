@@ -15,17 +15,15 @@ def mostrar_menu_principal():
 
 def mostrar_submenu():
     print("\nBienvenido al tu sesion de chat")
-    print("1) Cerrar sesión con una cuenta")
-    print("2) Eliminar la cuenta del servidor")
-    print("3) Mostrar todos los contactos y su estado")
-    print("4) Agregar un usuario a los contactos")
-    print("5) Mostrar detalles de contacto de un usuario")
-    print("6) Comunicación 1 a 1 con cualquier usuario/contacto")
-    print("7) Participar en conversaciones grupales")
-    print("8) Definir mensaje de presencia")
-    print("9) Enviar/recibir notificaciones")
-    print("10) Enviar/recibir archivos")
-    print("11) Salir")
+    print("1) Mostrar todos los datos y su estado")
+    print("2) Agregar un usuario a los contactos")
+    print("3) Mostrar detalles de contacto de un usuario")
+    print("4) Comunicacion 1 a 1 con cualquier usuario/contacto")
+    print("5) Participar en conversaciones grupales")
+    print("6) Definiar mensaje de presencia")
+    print("7) Enviar/recibir notificaciones")
+    print("8) Enviar/recibir archivos")
+    print("9) Cerrar sesion")
 
 def mostrar_error():
     print("Opción inválida. Por favor, intenta de nuevo.")
