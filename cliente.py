@@ -15,16 +15,25 @@ class Cliente(slixmpp.ClientXMPP):
 
         
         self.add_event_handler('session_start', self.start)
+
+    async def change_presece(self):
+        status, status_message = utils.get_status()
+        self.status = status
+        self.status_message = status_message
+        self.send_presence(pshow=self.status, pstatus=self.status_message) 
+        await self.get_roster() 
     
     async def add_contact(self):
         jid_to_add = input("Ingresa el JID del usuario que deseas agregar (Ejemplo: usuario@servidor.com): ")
         try:
-            self.send_presence_subscription(pto=jid_to_add, pfrom=self.boundjid.full, ptype='subscribe')
+            self.send_presence_subscription(pto = jid_to_add)
             print(f"Solicitud de suscripción enviada a {jid_to_add}")
+            await self.get_roster()
         except IqError as e:
             print(f"Error sending subscription request: {e.iq['error']['text']}")
         except IqTimeout:
             print("No response from server.")
+
 
     async def show_contacts_status(self):
         # Extract roster items and their presence status
@@ -124,7 +133,6 @@ class Cliente(slixmpp.ClientXMPP):
                     print("Opción 3 seleccionada: Mostrar detalles de contacto de un usuario")
                     await self.show_contact_details()
 
-
                 elif opcion == "4":
                     print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
                     await self.send_message_to_contact()
@@ -136,11 +144,7 @@ class Cliente(slixmpp.ClientXMPP):
 
                 elif opcion == "6":
                     print("Opción 6 seleccionada: Definir mensaje de presencia")
-                    status, status_message = utils.get_status()
-                    self.status = status
-                    self.status_message = status_message
-                    self.send_presence(pshow=self.status, pstatus=self.status_message) 
-                    await self.get_roster() 
+                    await self.change_presece()
 
                 elif opcion == "7":
                     print("Opción 7 seleccionada: Enviar/recibir notificaciones")
