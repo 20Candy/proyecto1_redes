@@ -5,22 +5,22 @@ from slixmpp.xmlstream.stanzabase import ET
 
 class Cliente(slixmpp.ClientXMPP):
     def __init__(self, jid, password):
+        super().__init__(jid, password)
         self.name = jid.split('@')[0]
-
-        ## plugins
-        self.register_plugin('xep_0030') # Service Discovery    
-        self.register_plugin('xep_0199') # Ping
-        self.register_plugin('xep_0045') # MUC
-        self.register_plugin('xep_0085') # Notifications
-        self.register_plugin('xep_0004') # Data Forms
-        self.register_plugin('xep_0060') # PubSub
-
-		# events
         self.add_event_handler('session_start', self.start)
-        self.add_event_handler('message', self.chat_recived)
-        self.add_event_handler('groupchat_message', self.chatroom_message)
-        self.add_event_handler('disco_items', self.print_rooms)
 
+    async def start(self, event):
+        try:
+            self.send_presence()
+            await self.get_roster()
+            print('Welcome to the chat')
+        except IqError as e:
+            print('Not abble to log in')
+            self.disconnect()
+        except IqTimeout:
+            print('Not abble to connect')
+            self.disconnect()   
+        
 
 # ======================================================================================================================================================================
 class Delete_Cliente(slixmpp.ClientXMPP):
