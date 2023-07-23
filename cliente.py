@@ -64,54 +64,5 @@ def register(client, password):
 	        'password': password
 	    }))
 
-def delete_account(client, password):
-    jid = xmpp.JID(client)
-    account = xmpp.Client(jid.getDomain(), debug=[])
-    account.connect()
-
-    try:
-        account.auth(jid.getNode(), password)
-        account.del_account()
-        account.disconnect()
-        return True
-    except xmpp.protocol.NoStream:
-        account.disconnect()
-        return False
-    
-async def delete_account(jid, password):
-
-    client = slixmpp.ClientXMPP(jid, password)
-
-    try:
-        await client.connect()
-        await client.process(forever=False)
-
-        # Request the account removal
-        response = await client.Iq()
-        response['type'] = 'set'
-        fragment = """
-            <query xmlns='jabber:iq:register'>
-                <remove/>
-            </query>
-        """
-        response.appendxml(fragment)
-
-        try:
-            # send the request to the server
-            await response.send()
-            print(f"Account deleted successfully: {client.boundjid.jid}!")
-            return True
-        except IqError as e:
-            print(f"Error on deleting account: {e.iq['error']['text']}")
-            return False
-        except IqTimeout:
-            print("No response from the server.")
-            return False
-        finally:
-            # Disconnect the client after the account deletion attempt
-            await client.disconnect()
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return False
+   
 
