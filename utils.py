@@ -25,5 +25,39 @@ def mostrar_submenu():
     print("8) Enviar/recibir archivos")
     print("9) Cerrar sesion")
 
+def mostrar_status_menu():
+    print("\nSelecciona el estado que deseas mostrar:")
+    print("1) Disponible")
+    print("2) Ausente")
+    print("3) Ocupado")
+    print("4) No molestar")
+
 def mostrar_error():
     print("Opción inválida. Por favor, intenta de nuevo.")
+
+def get_status():
+
+    status_incorrecto = True
+
+    while status_incorrecto:
+        mostrar_status_menu()
+        status = input('')
+
+        if status == '1':
+            status_incorrecto = False
+            status = 'chat'
+        elif status == '2':
+            status_incorrecto = False
+            status = 'away'
+        elif status == '3':
+            status_incorrecto = False
+            status = 'xa'
+        elif status == '4':
+            status_incorrecto = False
+            status = 'dnd'
+        else:
+            mostrar_error()
+        
+    print('Write down your status message: ')
+    status_message = input('')
+    return status, status_message
