@@ -1,16 +1,10 @@
 import cliente
-import logging
 from cliente import Cliente, Delete_Cliente
 import utils
 import asyncio
-from optparse import OptionParser
-
 
 def menu_principal():
-    optp = OptionParser()
-    optp.add_option('-d', '--debug', help='set loggin to DEBUG', action='store_const', dest='loglevel', const=logging.DEBUG, default=logging.INFO)
-    optp.add_option('-q', '--quiet', help='set loggin to ERROR', action='store_const', dest='loglevel', const=logging.ERROR, default=logging.INFO)
-    opts, args = optp.parse_args()
+
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
