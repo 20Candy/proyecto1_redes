@@ -24,6 +24,66 @@ class Cliente(slixmpp.ClientXMPP):
         except IqTimeout:
             print("No response from server.")
 
+    async def show_contacts_status(self):
+        # Extract roster items and their presence status
+        roster = self.client_roster
+        contacts = roster.keys()
+        my_contacts = []
+
+        if not contacts:
+            print("No contacts found.")
+            return
+
+        for jid in contacts:
+            sub = roster[jid]['subscription']
+            name = roster[jid]['name']
+            connections = roster.presence(jid)
+            status = 'Offline'
+
+            if connections:
+                status = connections[0]['show'] or 'Online'
+            my_contacts.append((name, jid, status, sub))
+
+        print("\nContact List:")
+        print("JID\t\t\t\tName\t\t\t\tStatus\t\t\t\tSubscription")
+        print("--------------------------------------------------------------------------")
+        for i in my_contacts:
+            print(f"{i[1]}\t\t\t\t{i[0]}\t\t\t\t{i[2]}\t\t\t\t{i[3]}")
+
+
+    async def set_presence_message(self):
+        show_options = ['away', 'chat', 'dnd', 'xa', None]
+        show = None
+        status = input("Ingresa tu mensaje de estado: ")
+        print("Opciones de disponibilidad:")
+        print("1. away")
+        print("2. chat")
+        print("3. dnd")
+        print("4. xa")
+        print("5. clear (no custom presence message)")
+        option = input("Ingresa el número de la opción que deseas: ")
+
+        if option.isdigit():
+            option = int(option)
+            if option >= 1 and option <= 4:
+                show = show_options[option - 1]
+
+        self.send_presence(pshow=show, pstatus=status)
+        print("Mensaje de presencia actualizado")
+
+    async def send_message_to_contact(self):
+        jid_to_send = input("Ingresa el JID del usuario/contacto al que deseas enviar un mensaje: ")
+        message = input("Ingresa tu mensaje: ")
+
+        try:
+            self.send_message(mto=jid_to_send, mbody=message, mtype='chat')
+            print(f"Mensaje enviado a {jid_to_send}: {message}")
+        except IqError as e:
+            print(f"Error sending the message: {e.iq['error']['text']}")
+        except IqTimeout:
+            print("No response from server.")
+            
+
     async def start(self, event):
         try:
             self.send_presence()
@@ -39,23 +99,26 @@ class Cliente(slixmpp.ClientXMPP):
 
                 if opcion == "1":
                     print("Opción 1 seleccionada: Mostrar todos los contactos y su estado")
+                    await self.show_contacts_status()
 
                 elif opcion == "2":
                     print("Opción 2 seleccionada: Agregar un usuario a los contactos")
                     await self.add_contact()
-
 
                 elif opcion == "3":
                     print("Opción 3 seleccionada: Mostrar detalles de contacto de un usuario")
 
                 elif opcion == "4":
                     print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
+                    await self.send_message_to_contact()
+
 
                 elif opcion == "5":
                     print("Opción 5 seleccionada: Participar en conversaciones grupales")
 
                 elif opcion == "6":
-                    print("Opción 6 seleccionada: Definiar mensaje de presencia")
+                    print("Opción 6 seleccionada: Definir mensaje de presencia")
+                    await self.set_presence_message()
 
                 elif opcion == "7":
                     print("Opción 7 seleccionada: Enviar/recibir notificaciones")
