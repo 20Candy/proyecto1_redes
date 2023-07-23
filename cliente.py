@@ -4,6 +4,9 @@ import xmpp
 import slixmpp
 from slixmpp.exceptions import IqError, IqTimeout
 from slixmpp.xmlstream.stanzabase import ET
+from aioconsole import ainput
+from aioconsole.stream import aprint
+import asyncio
 
 import utils
 
@@ -16,6 +19,8 @@ class Cliente(slixmpp.ClientXMPP):
         
         self.add_event_handler('session_start', self.start)
         self.add_event_handler('subscription_request', self.accept_subscription)
+        self.add_event_handler('message', self.chat_recived)
+
 
     async def accept_subscription(self, presence):
         if presence['type'] == 'subscribe':
@@ -29,6 +34,21 @@ class Cliente(slixmpp.ClientXMPP):
             except IqTimeout:
                 print("No response from server.")
 
+    async def chat_recived(self, message):
+        if message['type'] == 'chat':
+            user = str(message['from']).split('@')[0]
+            if user == self.actual_chat.split('@')[0]:
+                print(f'{user}: {message["body"]}')
+            else:
+                print(f'You have a new message from {user}')
+
+    def send_message_p_g(self, to, message = '', typeM = "chat"):
+
+        self.send_message(
+            mto=to,
+            mbody=message,
+            mtype=typeM
+		)
 
     async def change_presece(self):
         status, status_message = utils.get_status()
@@ -150,7 +170,21 @@ class Cliente(slixmpp.ClientXMPP):
 
                 elif opcion == "4":
                     print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
-                    await self.send_message_to_contact()
+                    
+
+                    jid = await ainput('Enter the JID of the user:\n>')
+                    self.actual_chat = jid
+                    await aprint(f'===================== Welcom to the chat with {jid.split("@")[0]} =====================')
+                    await aprint('To exit the chat, type "exit" and then press enter')
+                    chatting = True
+                    while chatting:
+                        message = await ainput('')
+                        if message == 'exit':
+                            chatting = False
+                            self.actual_chat = ''
+                        else:
+                            self.send_message_p_g(jid, message)
+                            await asyncio.sleep(0.5) # wait 0.5 seconds to make sure the message was sent
 
                 elif opcion == "5":
                     print("Opción 5 seleccionada: Participar en conversaciones grupales")
