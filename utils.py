@@ -15,7 +15,7 @@ def mostrar_menu_principal():
 
 def mostrar_submenu():
     print("\nBienvenido al tu sesion de chat")
-    print("1) Mostrar todos los datos y su estado")
+    print("1) Mostrar todos los contactos y su estado")
     print("2) Agregar un usuario a los contactos")
     print("3) Mostrar detalles de contacto de un usuario")
     print("4) Comunicacion 1 a 1 con cualquier usuario/contacto")

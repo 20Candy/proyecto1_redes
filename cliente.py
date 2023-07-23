@@ -14,6 +14,16 @@ class Cliente(slixmpp.ClientXMPP):
         self.add_event_handler('session_start', self.start)
         self.is_connected = False
 
+    async def add_contact(self):
+        jid_to_add = input("Ingresa el JID del usuario que deseas agregar (Ejemplo: usuario@servidor.com): ")
+        try:
+            self.send_presence_subscription(pto=jid_to_add, pfrom=self.boundjid.full, ptype='subscribe')
+            print(f"Solicitud de suscripción enviada a {jid_to_add}")
+        except IqError as e:
+            print(f"Error sending subscription request: {e.iq['error']['text']}")
+        except IqTimeout:
+            print("No response from server.")
+
     async def start(self, event):
         try:
             self.send_presence()
@@ -28,10 +38,12 @@ class Cliente(slixmpp.ClientXMPP):
                 opcion = input("\nIngresa tu opción: ")
 
                 if opcion == "1":
-                    print("Opción 1 seleccionada: Mostrar todos los datos y su estado")
+                    print("Opción 1 seleccionada: Mostrar todos los contactos y su estado")
 
                 elif opcion == "2":
                     print("Opción 2 seleccionada: Agregar un usuario a los contactos")
+                    await self.add_contact()
+
 
                 elif opcion == "3":
                     print("Opción 3 seleccionada: Mostrar detalles de contacto de un usuario")

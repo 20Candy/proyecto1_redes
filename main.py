@@ -5,7 +5,6 @@ import asyncio
 
 def menu_principal():
 
-
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     utils.mostrar_menu_principal()
@@ -22,8 +21,6 @@ def menu_principal():
                 print("Registro exitoso")
             else:
                 print("Registro fallido")
-
-                
 
         #INICO SESION-----------------------------------------------------------------------------------------------------------------
         elif opcion == "2":
