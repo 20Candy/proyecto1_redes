@@ -22,6 +22,8 @@ def menu_principal():
             else:
                 print("Registro fallido")
 
+                
+
         #INICO SESION-----------------------------------------------------------------------------------------------------------------
         elif opcion == "2":
             print("Opción 2 seleccionada: Iniciar sesión con una cuenta")

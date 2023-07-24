@@ -15,11 +15,12 @@ class Cliente(slixmpp.ClientXMPP):
         super().__init__(jid, password)
         self.name = jid.split('@')[0]
         self.is_connected = False
+        self.actual_chat = ''
 
         #Handlers de eventos
         self.add_event_handler('session_start', self.start)
         self.add_event_handler('subscription_request', self.accept_subscription)
-        self.add_event_handler('message', self.chat_recived)
+        self.add_event_handler('message', self.chat_received)
 
 
     #Fucniones handler de eventos =========================================================================================================================================
@@ -35,13 +36,13 @@ class Cliente(slixmpp.ClientXMPP):
             except IqTimeout:
                 print("No response from server.")
 
-    async def chat_recived(self, message):
+    async def chat_received(self, message):
         if message['type'] == 'chat':
             user = str(message['from']).split('@')[0]
             if user == self.actual_chat.split('@')[0]:
                 print(f'{user}: {message["body"]}')
             else:
-                print(f'Tienes un nuevo mensaje de{user}')
+                print(f'Tienes un nuevo mensaje de {user}')
 
     # Funciones asincronas ================================================================================================================================================
 
@@ -129,7 +130,7 @@ class Cliente(slixmpp.ClientXMPP):
 
         jid = await ainput('Ingrasa el JID del usairio\n')
         self.actual_chat = jid
-        await aprint('\n===================== Espacio de chat {jid.split("@")[0]} =====================')
+        await aprint(f'\n===================== Espacio de chat" {jid.split("@")[0]} =====================')
         await aprint('*Para salir, por favor presiona x')
         chatting = True
         while chatting:
@@ -149,56 +150,10 @@ class Cliente(slixmpp.ClientXMPP):
             self.is_connected = True
             print('Logged in')
 
-            #SUBMENU CON OPCIONES DE CHAT ====================================================================================================================================
-            while self.is_connected:
+            asyncio.create_task(self.run_main_event_loop())
 
-                utils.mostrar_submenu()
-                opcion = input("\nIngresa tu opción: ")
-
-                #Funcion para mostrar todos los contactos y su estado =======================================================================================================
-                if opcion == "1":
-                    print("Opción 1 seleccionada: Mostrar todos los contactos y su estado")
-                    await self.show_contacts_status()
-
-                #Funcion para agregar un usuario a los contactos ==============================================================================================================
-                elif opcion == "2":
-                    print("Opción 2 seleccionada: Agregar un usuario a los contactos")
-                    await self.add_contact()
-
-                #Funcion para mostrar detalles de contacto de un usuario =======================================================================================================
-                elif opcion == "3":
-                    print("Opción 3 seleccionada: Mostrar detalles de contacto de un usuario")
-                    await self.show_contact_details()
-
-                #Funcion para comunicacion 1 a 1 con cualquier usuario/contacto =================================================================================================
-                elif opcion == "4":
-                    print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
-                    await self.send_message_to_contact()
-                    
-                elif opcion == "5":
-                    print("Opción 5 seleccionada: Participar en conversaciones grupales")
-                    print("PENDIENTE")
-
-                elif opcion == "6":
-                    print("Opción 6 seleccionada: Definir mensaje de presencia")
-                    await self.change_presece()
-
-                elif opcion == "7":
-                    print("Opción 7 seleccionada: Enviar/recibir notificaciones")
-                    print("PENDIENTE")
                 
-                elif opcion == "8":
-                    print("Opción 8 seleccionada: Enviar/recibir archivos")
-                    print("PENDIENTE")
-
-                elif opcion == "9":
-                    print("Opción 9 seleccionada: Cerrar sesion")
-                    self.disconnect()
-                    self.is_connected = False
-                else:
-                    utils.mostrar_error()
                 
-
         # MANEJO DE ERRORES ===============================================================================================================================================
         except IqError as err:
             self.is_connected = False
@@ -208,6 +163,60 @@ class Cliente(slixmpp.ClientXMPP):
             self.is_connected = False
             print('Error: Server is taking too long to respond')
             self.disconnect()
+
+    # Funcion para correr el loop de eventos =============================================================================================================================
+    async def run_main_event_loop(self):
+        
+        #SUBMENU CON OPCIONES DE CHAT ====================================================================================================================================
+        while self.is_connected:
+
+            utils.mostrar_submenu()
+            opcion = await ainput("\nIngresa tu opción: ")
+
+            #Funcion para mostrar todos los contactos y su estado =======================================================================================================
+            if opcion == "1":
+                print("Opción 1 seleccionada: Mostrar todos los contactos y su estado")
+                await self.show_contacts_status()
+
+            #Funcion para agregar un usuario a los contactos ==============================================================================================================
+            elif opcion == "2":
+                print("Opción 2 seleccionada: Agregar un usuario a los contactos")
+                await self.add_contact()
+
+            #Funcion para mostrar detalles de contacto de un usuario =======================================================================================================
+            elif opcion == "3":
+                print("Opción 3 seleccionada: Mostrar detalles de contacto de un usuario")
+                await self.show_contact_details()
+
+            #Funcion para comunicacion 1 a 1 con cualquier usuario/contacto =================================================================================================
+            elif opcion == "4":
+                print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
+                await self.send_message_to_contact()
+                
+            elif opcion == "5":
+                print("Opción 5 seleccionada: Participar en conversaciones grupales")
+                print("PENDIENTE")
+
+            elif opcion == "6":
+                print("Opción 6 seleccionada: Definir mensaje de presencia")
+                await self.change_presece()
+
+            elif opcion == "7":
+                print("Opción 7 seleccionada: Enviar/recibir notificaciones")
+                print("PENDIENTE")
+            
+            elif opcion == "8":
+                print("Opción 8 seleccionada: Enviar/recibir archivos")
+                print("PENDIENTE")
+
+            elif opcion == "9":
+                print("Opción 9 seleccionada: Cerrar sesion")
+                self.disconnect()
+                self.is_connected = False
+            else:
+                utils.mostrar_error()
+
+            await asyncio.sleep(0.1)
 
 # ======================================================================================================================================================================
 class Delete_Cliente(slixmpp.ClientXMPP):
