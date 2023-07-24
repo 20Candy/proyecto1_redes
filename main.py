@@ -22,8 +22,6 @@ def menu_principal():
             else:
                 print("Registro fallido")
 
-                
-
         #INICO SESION-----------------------------------------------------------------------------------------------------------------
         elif opcion == "2":
             print("Opción 2 seleccionada: Iniciar sesión con una cuenta")
@@ -33,7 +31,7 @@ def menu_principal():
             client.connect(disable_starttls=True)
             client.process(forever=False)
             
-
+        #ELIMINAR CUENTA-----------------------------------------------------------------------------------------------------------------
         elif opcion == "3":
             print("Opción 3 seleccionada: Eliminar una cuenta")
             jid, password = utils.get_jid_and_password()

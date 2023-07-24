@@ -60,10 +60,11 @@ class Cliente(slixmpp.ClientXMPP):
 
         if iq['type'] == 'result':
             print('\nSalas de chat disponibles:')
-            for room in iq["disco_items"]:
-                print(f'{room["name"]}')
-                print(f'JID: {room["jid"]}')
-                print('=====================')
+            for salita in iq["disco_items"]:
+                print(f'Nomrbre:{salita["name"]}')
+                print(f'JID: {salita["jid"]}')
+                print("")
+
 
     # Funcion para mostrar notificacion de nuevo mensaje ==================================================================================================================
     
