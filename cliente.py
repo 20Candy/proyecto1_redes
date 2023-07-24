@@ -240,7 +240,7 @@ class Cliente(slixmpp.ClientXMPP):
                     nickName = await ainput("Ingresa el nickname que deseas usar: ")
                     room = await ainput("Ingresa el nombre de la sala de chat: ")
                     roomName = room + '@conference.alumchat.xyz'
-                    self.create_chat_room(roomName, nickName)
+                    # self.create_chat_room(roomName, nickName)
 
                     await aprint(f'\n===================== Espacio de chat grupal" {room} =====================')
                     await aprint('*Para salir, por favor presiona x')
