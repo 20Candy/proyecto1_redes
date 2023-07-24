@@ -8,6 +8,9 @@ from aioconsole import ainput
 from aioconsole.stream import aprint
 import asyncio
 
+import tkinter as tk
+from tkinter import messagebox
+
 import utils
 
 class Cliente(slixmpp.ClientXMPP):
@@ -17,10 +20,19 @@ class Cliente(slixmpp.ClientXMPP):
         self.is_connected = False
         self.actual_chat = ''
 
+        # # plugins
+        self.register_plugin('xep_0030') # Service Discovery
+        self.register_plugin('xep_0199') # Ping
+        self.register_plugin('xep_0045') # MUC
+        self.register_plugin('xep_0085') # Notifications
+        self.register_plugin('xep_0004') # Data Forms
+        self.register_plugin('xep_0060') # PubSub
+
         #Handlers de eventos
         self.add_event_handler('session_start', self.start)
         self.add_event_handler('subscription_request', self.accept_subscription)
         self.add_event_handler('message', self.chat_received)
+        self.add_event_handler('disco_items', self.print_rooms)
 
 
     #Fucniones handler de eventos =========================================================================================================================================
@@ -42,7 +54,24 @@ class Cliente(slixmpp.ClientXMPP):
             if user == self.actual_chat.split('@')[0]:
                 print(f'{user}: {message["body"]}')
             else:
-                print(f'Tienes un nuevo mensaje de {user}')
+                self.show_popup_notification(user)
+
+    async def print_rooms(self, iq):
+
+        if iq['type'] == 'result':
+            print('\nSalas de chat disponibles:')
+            for room in iq["disco_items"]:
+                print(f'{room["name"]}')
+                print(f'JID: {room["jid"]}')
+                print('=====================')
+
+    # Funcion para mostrar notificacion de nuevo mensaje ==================================================================================================================
+    
+    def show_popup_notification(self, user):
+        root = tk.Tk()
+        root.withdraw()  # Hide the main window
+        messagebox.showinfo("Nuevo Mensaje", f"Tienes un nuevo mensaje de {user}")
+        root.destroy()
 
     # Funciones asincronas ================================================================================================================================================
 
@@ -135,11 +164,17 @@ class Cliente(slixmpp.ClientXMPP):
         chatting = True
         while chatting:
             message = await ainput('')
-            if message == 'exit':
+            if message == 'x':
                 chatting = False
                 self.actual_chat = ''
             else:
                 self.send_message(mto=jid, mbody=message, mtype='chat')
+
+    async def show_all_rooms(self):
+        try:
+            await self['xep_0030'].get_items(jid = "conference.alumchat.xyz")
+        except (IqError, IqTimeout):
+            print("There was an error, please try again later")
 
     # Funcion principal =================================================================================================================================================
     
@@ -152,8 +187,7 @@ class Cliente(slixmpp.ClientXMPP):
 
             asyncio.create_task(self.run_main_event_loop())
 
-                
-                
+            
         # MANEJO DE ERRORES ===============================================================================================================================================
         except IqError as err:
             self.is_connected = False
@@ -195,20 +229,61 @@ class Cliente(slixmpp.ClientXMPP):
                 
             elif opcion == "5":
                 print("Opción 5 seleccionada: Participar en conversaciones grupales")
-                print("PENDIENTE")
+                
+                # SUBMENU CON OPCIONES DE GRUPOS ============================================================================================================================
+                utils.mostrar_menu_grupos()
+                opcion = await ainput("\nIngresa tu opción: ")
 
+                if opcion == "1":
+                    print("Opción 1 seleccionada: Crear una sala de chat")
+                    
+                    nickName = await ainput("Ingresa el nickname que deseas usar: ")
+                    room = await ainput("Ingresa el nombre de la sala de chat: ")
+                    roomName = room + '@conference.alumchat.xyz'
+                    self.create_chat_room(roomName, nickName)
+
+                    await aprint(f'\n===================== Espacio de chat grupal" {room} =====================')
+                    await aprint('*Para salir, por favor presiona x')
+                    chatting = True
+                    while chatting:
+                        message = await ainput('')
+                        if message == 'x':
+                            chatting = False
+                            self.actual_chat = ''
+                        else:
+                            self.send_message(mto=roomName, mbody=message, mtype='groupchat')
+
+
+                elif opcion == "2":
+                    print("Opción 2 seleccionada: Unirse a una sala de chat existente")
+                    print("PENDIENTE")
+
+                    
+                elif opcion == "3":
+                    print("Opción 3 seleccionada: Mostrar todas las salas de chat existentes")
+                    await self.show_all_rooms()
+                    
+
+                elif opcion == "4":
+                    print("Opción 4 seleccionada: Regresar")
+                    pass
+
+            # Funcion para definir mensaje de presencia ====================================================================================================================
             elif opcion == "6":
                 print("Opción 6 seleccionada: Definir mensaje de presencia")
                 await self.change_presece()
 
+            # Funcion para enviar/recibir notificaciones ===================================================================================================================
             elif opcion == "7":
                 print("Opción 7 seleccionada: Enviar/recibir notificaciones")
                 print("PENDIENTE")
             
+            # Funcion para enviar/recibir archivos ========================================================================================================================
             elif opcion == "8":
                 print("Opción 8 seleccionada: Enviar/recibir archivos")
                 print("PENDIENTE")
 
+            # Funcion para cerrar sesion ====================================================================================================================================
             elif opcion == "9":
                 print("Opción 9 seleccionada: Cerrar sesion")
                 self.disconnect()

@@ -25,8 +25,17 @@ def mostrar_submenu():
     print("8) Enviar/recibir archivos")
     print("9) Cerrar sesion")
 
-def mostrar_status_menu():
+
+def mostrar_menu_grupos():
+
     print("\nSelecciona el estado que deseas mostrar:")
+    print("1) Crear una sala de chat")
+    print("2) Unirse a una sala de chat existente")
+    print("3) Mostrar todas las salas de chat existentes")
+    print("4) Regresar")
+
+def mostrar_status_menu():
+    print("\nSelecciona la opcion que desees realizar:")
     print("1) Disponible")
     print("2) Ausente")
     print("3) Ocupado")
