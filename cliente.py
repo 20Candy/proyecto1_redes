@@ -20,7 +20,7 @@ class Cliente(slixmpp.ClientXMPP):
         self.is_connected = False
         self.actual_chat = ''
 
-        # # plugins
+        # # generado con chatgpt
         self.register_plugin('xep_0030') # Service Discovery
         self.register_plugin('xep_0199') # Ping
         self.register_plugin('xep_0045') # MUC
@@ -177,6 +177,23 @@ class Cliente(slixmpp.ClientXMPP):
         except (IqError, IqTimeout):
             print("There was an error, please try again later")
 
+    async def create_chat_room(self, roomName, nickName):
+        self.room = roomName
+        self.nick = nickName
+        self.room_created = False
+
+        try:
+            await self.plugin['xep_0045'].join_muc(roomName, nickName)
+            self.room_created = True
+            print("Sala de chat creada exitosamente")
+        except IqError as e:
+            print(f"Error creating chat room: {e.iq['error']['text']}")
+        except IqTimeout:
+            print("No response from server.")
+
+
+
+
     # Funcion principal =================================================================================================================================================
     
     async def start(self, event):
@@ -237,22 +254,11 @@ class Cliente(slixmpp.ClientXMPP):
 
                 if opcion == "1":
                     print("Opción 1 seleccionada: Crear una sala de chat")
-                    
-                    nickName = await ainput("Ingresa el nickname que deseas usar: ")
-                    room = await ainput("Ingresa el nombre de la sala de chat: ")
-                    roomName = room + '@conference.alumchat.xyz'
-                    # self.create_chat_room(roomName, nickName)
 
-                    await aprint(f'\n===================== Espacio de chat grupal" {room} =====================')
-                    await aprint('*Para salir, por favor presiona x')
-                    chatting = True
-                    while chatting:
-                        message = await ainput('')
-                        if message == 'x':
-                            chatting = False
-                            self.actual_chat = ''
-                        else:
-                            self.send_message(mto=roomName, mbody=message, mtype='groupchat')
+                    nickName = input("Ingresa el nickname que deseas usar: ")
+                    room = input("Ingresa el nombre de la sala de chat: ")
+                    roomName = f"{room}@conference.alumchat.xyz"
+                    await self.create_chat_room(roomName, nickName)
 
 
                 elif opcion == "2":
