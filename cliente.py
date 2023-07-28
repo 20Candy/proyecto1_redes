@@ -33,6 +33,7 @@ class Cliente(slixmpp.ClientXMPP):
         self.add_event_handler('subscription_request', self.accept_subscription)
         self.add_event_handler('message', self.chat_received)
         self.add_event_handler('disco_items', self.print_rooms)
+        self.add_event_handler('groupchat_message', self.chatroom_message)
 
 
     #Fucniones handler de eventos =========================================================================================================================================
@@ -191,7 +192,46 @@ class Cliente(slixmpp.ClientXMPP):
         except IqTimeout:
             print("No response from server.")
 
+    async def join_chat_room(self, roomName, nickName):
+        self.room = roomName
+        self.nick = nickName
+        self.room_created = False
 
+        try:
+            await self.plugin['xep_0045'].join_muc(roomName, nickName)
+            self.room_created = True
+            print("Sala de chat creada exitosamente")
+        except IqError as e:
+            print(f"Error creating chat room: {e.iq['error']['text']}")
+        except IqTimeout:
+            print("No response from server.")
+            return
+
+        await aprint(f'\n===================== Espacio de chat" {self.room.split("@")[0]} =====================')
+        await aprint('*Para salir, por favor presiona x')
+        chatting = True
+        while chatting:
+            message = await ainput('')
+            if message == 'x':
+                chatting = False
+                self.actual_chat = ''
+                self.exit_room()
+            else:
+                self.send_message(self.room, message, mtype='groupchat')
+            
+
+    async def chatroom_message(self, message=''):
+        user = message['mucnick']
+        is_actual_room = self.room in str(message['from'])
+        display_message = f'{user}: {message["body"]}'
+
+        if is_actual_room and user != self.nick:
+            print(display_message)
+
+    def exit_room(self):
+        self['xep_0045'].leave_muc(self.room, self.nick)
+        self.room = None
+        self.nick = None
 
 
     # Funcion principal =================================================================================================================================================
@@ -263,9 +303,11 @@ class Cliente(slixmpp.ClientXMPP):
 
                 elif opcion == "2":
                     print("Opción 2 seleccionada: Unirse a una sala de chat existente")
-                    print("PENDIENTE")
-
+                    nickName = input("Ingresa el nickname que deseas usar: ")
+                    room = input("Ingresa el nombre de la sala de chat: ")
+                    await self.join_chat_room(room, nickName)
                     
+
                 elif opcion == "3":
                     print("Opción 3 seleccionada: Mostrar todas las salas de chat existentes")
                     await self.show_all_rooms()
@@ -279,20 +321,11 @@ class Cliente(slixmpp.ClientXMPP):
             elif opcion == "6":
                 print("Opción 6 seleccionada: Definir mensaje de presencia")
                 await self.change_presece()
-
-            # Funcion para enviar/recibir notificaciones ===================================================================================================================
-            elif opcion == "7":
-                print("Opción 7 seleccionada: Enviar/recibir notificaciones")
-                print("PENDIENTE")
             
-            # Funcion para enviar/recibir archivos ========================================================================================================================
-            elif opcion == "8":
-                print("Opción 8 seleccionada: Enviar/recibir archivos")
-                print("PENDIENTE")
 
             # Funcion para cerrar sesion ====================================================================================================================================
-            elif opcion == "9":
-                print("Opción 9 seleccionada: Cerrar sesion")
+            elif opcion == "7":
+                print("Opción 7 seleccionada: Cerrar sesion")
                 self.disconnect()
                 self.is_connected = False
             else:
