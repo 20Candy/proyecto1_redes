@@ -195,19 +195,18 @@ class Cliente(slixmpp.ClientXMPP):
     async def join_chat_room(self, roomName, nickName):
         self.room = roomName
         self.nick = nickName
-        self.room_created = False
+
+        print(f"\nUtlimos mensajes de  {roomName}...")
 
         try:
             await self.plugin['xep_0045'].join_muc(roomName, nickName)
-            self.room_created = True
-            print("Sala de chat creada exitosamente")
         except IqError as e:
             print(f"Error creating chat room: {e.iq['error']['text']}")
         except IqTimeout:
             print("No response from server.")
             return
 
-        await aprint(f'\n===================== Espacio de chat" {self.room.split("@")[0]} =====================')
+        await aprint(f'\n===================== Espacio de chat {self.room.split("@")[0]} =====================')
         await aprint('*Para salir, por favor presiona x')
         chatting = True
         while chatting:
