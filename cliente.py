@@ -1,4 +1,5 @@
 from asyncio import Future
+import ssl
 from typing import Optional, Union
 import xmpp
 import slixmpp
@@ -27,7 +28,7 @@ class Cliente(slixmpp.ClientXMPP):
         self.register_plugin('xep_0004') # Data Forms
         self.register_plugin('xep_0060') # PubSub
         self.register_plugin('xep_0066') # Out of Band Data
-        self.register_plugin('xep_0047') # In-band Bytestreams
+        self.register_plugin('xep_0065') # SOCKS5 Bytestreams
 
         #Handlers de eventos
         self.add_event_handler('session_start', self.start)
@@ -249,22 +250,26 @@ class Cliente(slixmpp.ClientXMPP):
         self.nick = None
 
     async def send_file(self):
-        jid = await ainput('Ingrasa el JID del usairio\n')
-        file = "enviar.txt"
+        receiver = await ainput('Ingrasa el JID del usuario\n')
+        filename = "enviar.txt"
+        file = open(filename, 'rb')
 
-        # try:
-        stream = await self['xep_0047'].open_stream(jid)
+        try:
+            #Set the receiver
+            proxy = await self['xep_0065'].handshake(receiver)
+            while True:
+                data = file.read(1048576)
+                if not data:
+                    break
+                await proxy.write(data)
 
-        with open(file, 'rb') as fp:
-            data = fp.read()
-            await stream.sendfile(data, name=file)
-
-        #     await stream.close()
-        # except IqError as e:
-        #     print(f"Error sending file: {e.iq['error']['text']}")
-        # except IqTimeout:
-        #     print("No response from server.")
-
+            proxy.transport.write_eof()
+        except (IqError, IqTimeout) as e:
+            print('Timeout', e)
+        else:
+            print('Procedimiento terminado')
+        finally:
+            file.close()
 
     # Funcion principal =================================================================================================================================================
     
