@@ -26,6 +26,8 @@ class Cliente(slixmpp.ClientXMPP):
         self.register_plugin('xep_0085') # Notifications
         self.register_plugin('xep_0004') # Data Forms
         self.register_plugin('xep_0060') # PubSub
+        self.register_plugin('xep_0066') # Out of Band Data
+        self.register_plugin('xep_0047') # In-band Bytestreams
 
         #Handlers de eventos
         self.add_event_handler('session_start', self.start)
@@ -246,6 +248,23 @@ class Cliente(slixmpp.ClientXMPP):
         self.room = None
         self.nick = None
 
+    async def send_file(self):
+        jid = await ainput('Ingrasa el JID del usairio\n')
+        file = "enviar.txt"
+
+        # try:
+        stream = await self['xep_0047'].open_stream(jid)
+
+        with open(file, 'rb') as fp:
+            data = fp.read()
+            await stream.sendfile(data, name=file)
+
+        #     await stream.close()
+        # except IqError as e:
+        #     print(f"Error sending file: {e.iq['error']['text']}")
+        # except IqTimeout:
+        #     print("No response from server.")
+
 
     # Funcion principal =================================================================================================================================================
     
@@ -333,11 +352,15 @@ class Cliente(slixmpp.ClientXMPP):
             elif opcion == "6":
                 print("Opción 6 seleccionada: Definir mensaje de presencia")
                 await self.change_presece()
-            
 
-            # Funcion para cerrar sesion ====================================================================================================================================
+            # Funcion para enviar archivos ====================================================================================================================================
             elif opcion == "7":
-                print("Opción 7 seleccionada: Cerrar sesion")
+                print("Opción 7 seleccionada: Enviar archivos")
+                await self.send_file()
+        
+            # Funcion para cerrar sesion ====================================================================================================================================
+            elif opcion == "8":
+                print("Opción 8 seleccionada: Cerrar sesion")
                 self.disconnect()
                 self.is_connected = False
             else:

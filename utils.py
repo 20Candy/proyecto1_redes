@@ -21,7 +21,8 @@ def mostrar_submenu():
     print("4) Comunicacion 1 a 1 con cualquier usuario/contacto")
     print("5) Participar en conversaciones grupales")
     print("6) Definiar mensaje de presencia")
-    print("7) Cerrar sesion")
+    print("7) Enviar archivos")
+    print("8) Cerrar sesion")
 
 def mostrar_menu_grupos():
 
