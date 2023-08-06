@@ -36,7 +36,7 @@ class Cliente(slixmpp.ClientXMPP):
         self.add_event_handler('message', self.chat_received)
         self.add_event_handler('disco_items', self.print_rooms)
         self.add_event_handler('groupchat_message', self.chatroom_message)
-
+        self.add_event_handler('presence', self.presence_handler)
 
     #Fucniones handler de eventos =========================================================================================================================================
     async def accept_subscription(self, presence):
@@ -45,7 +45,7 @@ class Cliente(slixmpp.ClientXMPP):
             try:
                 self.send_presence_subscription(pto=presence['from'], ptype='subscribed')
                 await self.get_roster()
-                print(f"Accepted subscription request from {presence['from']}")
+                self.show_popup_notification("Solicitud de suscripción aceptada de " + str(presence['from']).split('@')[0])
             except IqError as e:
                 print(f"Error accepting subscription request: {e.iq['error']['text']}")
             except IqTimeout:
@@ -57,7 +57,7 @@ class Cliente(slixmpp.ClientXMPP):
             if user == self.actual_chat.split('@')[0]:
                 print(f'{user}: {message["body"]}')
             else:
-                self.show_popup_notification(user)
+                self.show_popup_notification(f"Tienes un nuevo mensaje de {user}")
 
     async def print_rooms(self, iq):
 
@@ -68,15 +68,47 @@ class Cliente(slixmpp.ClientXMPP):
                 print(f'JID: {salita["jid"]}')
                 print("")
 
+    # Add event handler to show notifications for presence changes
+    def presence_handler(self, presence):
+        if self.is_connected:
+
+            if presence['type'] == 'available':
+                self.show_presence_notification(presence, True)
+
+            elif presence['type'] == 'unavailable':
+                self.show_presence_notification(presence, False)
+            
+            else:
+                self.show_presence_notification(presence, None)
 
     # Funcion para mostrar notificacion de nuevo mensaje ==================================================================================================================
     
-    def show_popup_notification(self, user):
+    def show_popup_notification(self, mensaje):
         root = tk.Tk()
         root.withdraw()  # Hide the main window
-        messagebox.showinfo("Nuevo Mensaje", f"Tienes un nuevo mensaje de {user}")
+        messagebox.showinfo("Nuevo Mensaje", mensaje)
         root.destroy()
 
+    def show_presence_notification(self, presence, is_available):
+
+        if is_available:
+            show = 'available'
+        elif is_available == False:
+            show = 'offline'
+        else:
+            show = presence['show']
+
+        user = (str(presence['from']).split('/')[0])
+        status = presence['status']
+
+        if status == '':
+            notification_message = f'{user} is {show} - {status}'
+        else:
+            notification_message = f'{user} is {show}'
+
+        self.show_popup_notification(notification_message)
+
+ 
     # Funciones asincronas ================================================================================================================================================
 
     async def change_presece(self):
