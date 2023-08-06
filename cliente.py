@@ -7,7 +7,6 @@ from slixmpp.xmlstream.stanzabase import ET
 from aioconsole import ainput
 from aioconsole.stream import aprint
 import asyncio
-
 import tkinter as tk
 from tkinter import messagebox
 
@@ -178,19 +177,34 @@ class Cliente(slixmpp.ClientXMPP):
         except (IqError, IqTimeout):
             print("There was an error, please try again later")
 
-    async def create_chat_room(self, roomName, nickName):
-        self.room = roomName
-        self.nick = nickName
-        self.room_created = False
-
+    async def create_chat_room(self,room_name):
         try:
-            await self.plugin['xep_0045'].join_muc(roomName, nickName)
-            self.room_created = True
-            print("Sala de chat creada exitosamente")
+            self.plugin['xep_0045'].join_muc(room_name, self.boundjid.user)
+
+            await asyncio.sleep(2)
+
+            form = self.plugin['xep_0004'].make_form(ftype='submit', title='Configuracion de sala de chat')
+
+            form['muc#roomconfig_roomname'] = room_name
+            form['muc#roomconfig_persistentroom'] = '1'
+            form['muc#roomconfig_publicroom'] = '1'
+            form['muc#roomconfig_membersonly'] = '0'
+            form['muc#roomconfig_allowinvites'] = '0'
+            form['muc#roomconfig_enablelogging'] = '1'
+            form['muc#roomconfig_changesubject'] = '1'
+            form['muc#roomconfig_maxusers'] = '100'
+            form['muc#roomconfig_whois'] = 'anyone'
+            form['muc#roomconfig_roomdesc'] = 'Chat de prueba'
+            form['muc#roomconfig_roomowners'] = [self.boundjid.user]
+
+            await self.plugin['xep_0045'].set_room_config(room_name, config=form)
+
+            print(f"Sala de chat '{room_name}' creada correctamente.")
         except IqError as e:
-            print(f"Error creating chat room: {e.iq['error']['text']}")
+            print(f"Error al crear la sala de chat: {e}")
         except IqTimeout:
-            print("No response from server.")
+            print("Tiempo de espera agotado al crear la sala de chat.")
+                
 
     async def join_chat_room(self, roomName, nickName):
         self.room = roomName
@@ -294,10 +308,9 @@ class Cliente(slixmpp.ClientXMPP):
                 if opcion == "1":
                     print("Opción 1 seleccionada: Crear una sala de chat")
 
-                    nickName = input("Ingresa el nickname que deseas usar: ")
                     room = input("Ingresa el nombre de la sala de chat: ")
                     roomName = f"{room}@conference.alumchat.xyz"
-                    await self.create_chat_room(roomName, nickName)
+                    await self.create_chat_room(roomName)
 
 
                 elif opcion == "2":
