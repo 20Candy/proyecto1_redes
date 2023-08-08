@@ -94,7 +94,7 @@ class Cliente(slixmpp.ClientXMPP):
 
     def show_presence_notification(self, presence, is_available):
 
-        if presence['from'] != self.boundjid.bare and "conference" not in str(presence['from']):
+        if str(presence['from']).split("/")[0] != self.boundjid.bare and "conference" not in str(presence['from']):
 
             if is_available:
                 show = 'available'
@@ -106,7 +106,7 @@ class Cliente(slixmpp.ClientXMPP):
             user = (str(presence['from']).split('/')[0])
             status = presence['status']
 
-            if status == '':
+            if status != '':
                 notification_message = f'{user} is {show} - {status}'
             else:
                 notification_message = f'{user} is {show}'
@@ -163,6 +163,10 @@ class Cliente(slixmpp.ClientXMPP):
 
         print("\nLista de contactos:")
         for c in contact_list:
+
+            if c[0] == self.boundjid.bare:
+                print("\nUsuario actual:")
+
             print(f"Contacto: {c[0]}")
             print(f"Estado: {c[1]}")
             print(f"Mensaje de estado: {c[2]}")
@@ -248,9 +252,9 @@ class Cliente(slixmpp.ClientXMPP):
             print("Tiempo de espera agotado al crear la sala de chat.")
                 
 
-    async def join_chat_room(self, roomName, nickName):
+    async def join_chat_room(self, roomName):
         self.room = roomName
-        self.nick = nickName
+        self.nick = self.boundjid.user
 
         print(f"\nUtlimos mensajes de  {roomName}...")
 
@@ -385,9 +389,8 @@ class Cliente(slixmpp.ClientXMPP):
 
                 elif opcion == "2":
                     print("Opción 2 seleccionada: Unirse a una sala de chat existente")
-                    nickName = input("Ingresa tu nickname: ")
                     room = input("Ingresa el nombre de la sala de chat: ")
-                    await self.join_chat_room(room, nickName)
+                    await self.join_chat_room(room)
                     
 
                 elif opcion == "3":
