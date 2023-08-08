@@ -19,6 +19,8 @@ class Cliente(slixmpp.ClientXMPP):
         self.name = jid.split('@')[0]
         self.is_connected = False
         self.actual_chat = ''
+        self.room = ''
+        self.nick = ''
 
         # # generado con chatgpt
         self.register_plugin('xep_0030') # Service Discovery
@@ -69,7 +71,7 @@ class Cliente(slixmpp.ClientXMPP):
                 print("")
 
     # Add event handler to show notifications for presence changes
-    def presence_handler(self, presence):
+    async def presence_handler(self, presence):
         if self.is_connected:
 
             if presence['type'] == 'available':
@@ -91,22 +93,24 @@ class Cliente(slixmpp.ClientXMPP):
 
     def show_presence_notification(self, presence, is_available):
 
-        if is_available:
-            show = 'available'
-        elif is_available == False:
-            show = 'offline'
-        else:
-            show = presence['show']
+        if presence['from'] != self.boundjid.bare and "conference" not in str(presence['from']):
 
-        user = (str(presence['from']).split('/')[0])
-        status = presence['status']
+            if is_available:
+                show = 'available'
+            elif is_available == False:
+                show = 'offline'
+            else:
+                show = presence['show']
 
-        if status == '':
-            notification_message = f'{user} is {show} - {status}'
-        else:
-            notification_message = f'{user} is {show}'
+            user = (str(presence['from']).split('/')[0])
+            status = presence['status']
 
-        self.show_popup_notification(notification_message)
+            if status == '':
+                notification_message = f'{user} is {show} - {status}'
+            else:
+                notification_message = f'{user} is {show}'
+
+            self.show_popup_notification(notification_message)
 
  
     # Funciones asincronas ================================================================================================================================================
@@ -234,6 +238,8 @@ class Cliente(slixmpp.ClientXMPP):
 
             await self.plugin['xep_0045'].set_room_config(room_name, config=form)
 
+            self.send_message(mto=room_name, mbody="Sala de chat creada", mtype='groupchat')
+
             print(f"Sala de chat '{room_name}' creada correctamente.")
         except IqError as e:
             print(f"Error al crear la sala de chat: {e}")
@@ -248,7 +254,7 @@ class Cliente(slixmpp.ClientXMPP):
         print(f"\nUtlimos mensajes de  {roomName}...")
 
         try:
-            await self.plugin['xep_0045'].join_muc(roomName, nickName)
+            await self.plugin['xep_0045'].join_muc(roomName, self.nick)
         except IqError as e:
             print(f"Error creating chat room: {e.iq['error']['text']}")
         except IqTimeout:
@@ -266,15 +272,22 @@ class Cliente(slixmpp.ClientXMPP):
                 self.exit_room()
             else:
                 self.send_message(self.room, message, mtype='groupchat')
+
             
 
     async def chatroom_message(self, message=''):
+
         user = message['mucnick']
         is_actual_room = self.room in str(message['from'])
         display_message = f'{user}: {message["body"]}'
 
-        if is_actual_room and user != self.nick:
-            print(display_message)
+        if user != self.boundjid.user:
+            if is_actual_room:
+                print(display_message)
+            else:
+                self.show_popup_notification(f"Tienes un nuevo mensaje de {user} en la sala de chat {self.room.split('@')[0]}")
+
+
 
     def exit_room(self):
         self['xep_0045'].leave_muc(self.room, self.nick)
@@ -371,7 +384,7 @@ class Cliente(slixmpp.ClientXMPP):
 
                 elif opcion == "2":
                     print("Opción 2 seleccionada: Unirse a una sala de chat existente")
-                    nickName = input("Ingresa el nickname que deseas usar: ")
+                    nickName = input("Ingresa tu nickname: ")
                     room = input("Ingresa el nombre de la sala de chat: ")
                     await self.join_chat_room(room, nickName)
                     
