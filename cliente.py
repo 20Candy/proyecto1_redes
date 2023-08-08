@@ -34,25 +34,12 @@ class Cliente(slixmpp.ClientXMPP):
 
         #Handlers de eventos
         self.add_event_handler('session_start', self.start)
-        self.add_event_handler('subscription_request', self.accept_subscription)
         self.add_event_handler('message', self.chat_received)
         self.add_event_handler('disco_items', self.print_rooms)
         self.add_event_handler('groupchat_message', self.chatroom_message)
         self.add_event_handler('presence', self.presence_handler)
 
     #Fucniones handler de eventos =========================================================================================================================================
-    async def accept_subscription(self, presence):
-        if presence['type'] == 'subscribe':
-            # Automatically accept the subscription request
-            try:
-                self.send_presence_subscription(pto=presence['from'], ptype='subscribed')
-                await self.get_roster()
-                self.show_popup_notification("Solicitud de suscripción aceptada de " + str(presence['from']).split('@')[0])
-            except IqError as e:
-                print(f"Error accepting subscription request: {e.iq['error']['text']}")
-            except IqTimeout:
-                print("No response from server.")
-
     async def chat_received(self, message):
         if message['type'] == 'chat':
             user = str(message['from']).split('@')[0]
@@ -72,16 +59,30 @@ class Cliente(slixmpp.ClientXMPP):
 
     # Add event handler to show notifications for presence changes
     async def presence_handler(self, presence):
-        if self.is_connected:
 
-            if presence['type'] == 'available':
-                self.show_presence_notification(presence, True)
+        if presence['type'] == 'subscribe':
+            # Automatically accept the subscription request
+            try:
+                self.send_presence_subscription(pto=presence['from'], ptype='subscribed')
+                await self.get_roster()
+                self.show_popup_notification("Solicitud de suscripción aceptada de " + str(presence['from']).split('@')[0])
+            except IqError as e:
+                print(f"Error accepting subscription request: {e.iq['error']['text']}")
+            except IqTimeout:
+                print("No response from server.")
 
-            elif presence['type'] == 'unavailable':
-                self.show_presence_notification(presence, False)
-            
-            else:
-                self.show_presence_notification(presence, None)
+        else:
+
+            if self.is_connected:
+
+                if presence['type'] == 'available':
+                    self.show_presence_notification(presence, True)
+
+                elif presence['type'] == 'unavailable':
+                    self.show_presence_notification(presence, False)
+                
+                else:
+                    self.show_presence_notification(presence, None)
 
     # Funcion para mostrar notificacion de nuevo mensaje ==================================================================================================================
     
