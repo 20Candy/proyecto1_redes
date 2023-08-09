@@ -47,13 +47,15 @@ class Cliente(slixmpp.ClientXMPP):
             user = str(message['from']).split('@')[0]
 
             if message['body'].startswith("file://"):  
-                extension = message['body'][7:].split("://")[0]
-                encoded_data = message['body'][13:] 
+                file_info = message['body'][7:].split("://")
+                extension = file_info[0]
+                encoded_data = file_info[1]
+                
                 try:
                     decoded_data = base64.b64decode(encoded_data)
-                    with open("recibido."+extension, "wb") as file:
+                    with open("recibido." + extension, "wb") as file:
                         file.write(decoded_data)
-                        self.show_popup_notification(f"Archivo recibido y guadado como recibido.{extension} por parte de {user}")
+                        self.show_popup_notification(f"Archivo recibido y guardado como recibido.{extension} por parte de {user}")
 
                 except Exception as e:
                     print("\nError decoding and saving the received file:", e)
@@ -63,6 +65,7 @@ class Cliente(slixmpp.ClientXMPP):
                     print(f'{user}: {message["body"]}')
                 else:
                     self.show_popup_notification(f"Tienes un nuevo mensaje de {user}")
+
 
     async def print_rooms(self, iq):
 
