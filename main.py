@@ -28,7 +28,7 @@ def menu_principal():
             jid, password = utils.get_jid_and_password()
 
             client = Cliente(jid, password)
-            client.connect(disable_starttls=True)
+            client.connect(disable_starttls=True, use_ssl=False)
             client.process(forever=False)
             
         #ELIMINAR CUENTA-----------------------------------------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ def menu_principal():
             print("Opción 3 seleccionada: Eliminar una cuenta")
             jid, password = utils.get_jid_and_password()
             client = Delete_Cliente(jid, password)
-            client.connect(disable_starttls=True)
+            client.connect(disable_starttls=True, use_ssl=False)
             client.process(forever=False)
 
 

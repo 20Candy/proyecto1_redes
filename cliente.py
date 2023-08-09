@@ -10,6 +10,8 @@ from aioconsole.stream import aprint
 import asyncio
 import tkinter as tk
 from tkinter import messagebox
+import base64
+
 
 import utils
 
@@ -30,7 +32,7 @@ class Cliente(slixmpp.ClientXMPP):
         self.register_plugin('xep_0004') # Data Forms
         self.register_plugin('xep_0060') # PubSub
         self.register_plugin('xep_0066') # Out of Band Data
-        self.register_plugin('xep_0065') # SOCKS5 Bytestreams
+        self.register_plugin('xep_0363') # HTTP File Upload
 
         #Handlers de eventos
         self.add_event_handler('session_start', self.start)
@@ -43,10 +45,24 @@ class Cliente(slixmpp.ClientXMPP):
     async def chat_received(self, message):
         if message['type'] == 'chat':
             user = str(message['from']).split('@')[0]
-            if user == self.actual_chat.split('@')[0]:
-                print(f'{user}: {message["body"]}')
+
+            if message['body'].startswith("file://"):  
+                extension = message['body'][7:].split("://")[0]
+                encoded_data = message['body'][13:] 
+                try:
+                    decoded_data = base64.b64decode(encoded_data)
+                    with open("recibido."+extension, "wb") as file:
+                        file.write(decoded_data)
+                        self.show_popup_notification(f"Archivo recibido y guadado como recibido.{extension} por parte de {user}")
+
+                except Exception as e:
+                    print("\nError decoding and saving the received file:", e)
+
             else:
-                self.show_popup_notification(f"Tienes un nuevo mensaje de {user}")
+                if user == self.actual_chat.split('@')[0]:
+                    print(f'{user}: {message["body"]}')
+                else:
+                    self.show_popup_notification(f"Tienes un nuevo mensaje de {user}")
 
     async def print_rooms(self, iq):
 
@@ -85,7 +101,7 @@ class Cliente(slixmpp.ClientXMPP):
                     self.show_presence_notification(presence, None)
 
     # Funcion para mostrar notificacion de nuevo mensaje ==================================================================================================================
-    
+
     def show_popup_notification(self, mensaje):
         root = tk.Tk()
         root.withdraw()  # Hide the main window
@@ -299,28 +315,19 @@ class Cliente(slixmpp.ClientXMPP):
         self.room = None
         self.nick = None
 
-    async def send_file(self):
-        receiver = await ainput('Ingrasa el JID del usuario\n')
-        filename = "enviar.txt"
-        file = open(filename, 'rb')
+    async def send_file(self, recipient_jid, file_path):
+        extension = file_path.split(".")[-1]
 
-        try:
-            #Set the receiver
-            proxy = await self['xep_0065'].handshake(receiver)
-            while True:
-                data = file.read(1048576)
-                if not data:
-                    break
-                await proxy.write(data)
+        with open(file_path, "rb") as file:
+            file_data = file.read()
 
-            proxy.transport.write_eof()
-        except (IqError, IqTimeout) as e:
-            print('Timeout', e)
-        else:
-            print('Procedimiento terminado')
-        finally:
-            file.close()
+        encoded_data = base64.b64encode(file_data).decode()
+        message =  message = f"file://{extension}://{encoded_data}"
 
+        self.send_message(mto=recipient_jid, mbody=message, mtype='chat')
+
+  
+    
     # Funcion principal =================================================================================================================================================
     
     async def start(self, event):
@@ -410,7 +417,9 @@ class Cliente(slixmpp.ClientXMPP):
             # Funcion para enviar archivos ====================================================================================================================================
             elif opcion == "7":
                 print("Opción 7 seleccionada: Enviar archivos")
-                await self.send_file()
+                user = input("Ingresa el JID del usuario al que deseas enviar el archivo: ")
+                path = input("Ingresa la ruta del archivo que deseas enviar: ")
+                await self.send_file(user, path)
         
             # Funcion para cerrar sesion ====================================================================================================================================
             elif opcion == "8":
