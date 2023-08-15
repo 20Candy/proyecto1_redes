@@ -19,7 +19,7 @@ XMPP
 ## Construido con 🛠️
 - Python
 
-## 📋 Características
+## Características 📋
 
 Este cliente posee las siguientes implementacion
 
@@ -39,6 +39,8 @@ Este cliente posee las siguientes implementacion
 - [X] Enviar/Recibir notificaciones.
 - [X] Enviar/Recibir archivos.
 
+## Video 🎥
+https://youtu.be/NuZOVoRBlpQ
 
 ## Autores ✒️
 

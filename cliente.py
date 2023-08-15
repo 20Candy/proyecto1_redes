@@ -31,6 +31,7 @@ class Cliente(slixmpp.ClientXMPP):
         self.actual_chat = ''
         self.room = ''
         self.nick = ''
+        self.opcion = -1
 
         #generado con chatgpt 
         self.register_plugin('xep_0030') # Service Discovery
@@ -82,7 +83,7 @@ class Cliente(slixmpp.ClientXMPP):
 
                 # en caso contrraio se muestra una notificacion
                 else:
-                    self.show_popup_notification(f"Tienes un nuevo mensaje de {user}")
+                    self.show_popup_notification(f"Tienes un nuevo mensaje de {user}: {message['body']}")
 
     # Funcion para recibir mensajes de salas de chat --------------------------------------------------------------------------------------------------------------------------------
     async def chatroom_message(self, message=''):
@@ -163,12 +164,14 @@ class Cliente(slixmpp.ClientXMPP):
             #obtener presencia de cada contacto
             status = presence['status']
 
-            if status != '':
-                notification_message = f'{user} is {show} - {status}'
-            else:
-                notification_message = f'{user} is {show}'
+            if show != "":
 
-            self.show_popup_notification(notification_message) # se muestra la notificacion
+                if status != '':
+                    notification_message = f'{user} is {show} - {status}'
+                else:
+                    notification_message = f'{user} is {show}'
+
+                self.show_popup_notification(notification_message) # se muestra la notificacion
 
 
     # Funciones asincronas ================================================================================================================================================
@@ -405,41 +408,41 @@ class Cliente(slixmpp.ClientXMPP):
     # Funcion para correr el loop de eventos =============================================================================================================================
     async def run_main_event_loop(self):
         
-        #SUBMENU CON OPCIONES DE CHAT ====================================================================================================================================
+        #SUBMENU CON self.OPCIONES DE CHAT ====================================================================================================================================
         while self.is_connected:
 
             utils.mostrar_submenu()
-            opcion = await ainput("\nIngresa tu opción: ")
+            self.opcion = await ainput("\nIngresa tu opción: ")
 
             #Funcion para mostrar todos los contactos y su estado =======================================================================================================
-            if opcion == "1":
+            if self.opcion == "1":
                 print("Opción 1 seleccionada: Mostrar todos los contactos y su estado")
                 await self.show_contacts_status()
 
             #Funcion para agregar un usuario a los contactos ==============================================================================================================
-            elif opcion == "2":
+            elif self.opcion == "2":
                 print("Opción 2 seleccionada: Agregar un usuario a los contactos")
                 await self.add_contact()
 
             #Funcion para mostrar detalles de contacto de un usuario =======================================================================================================
-            elif opcion == "3":
+            elif self.opcion == "3":
                 print("Opción 3 seleccionada: Mostrar detalles de contacto de un usuario")
                 await self.show_contact_details()
 
             #Funcion para comunicacion 1 a 1 con cualquier usuario/contacto =================================================================================================
-            elif opcion == "4":
+            elif self.opcion == "4":
                 print("Opción 4 seleccionada: Comunicacion 1 a 1 con cualquier usuario/contacto")
                 await self.send_message_to_contact()
                 
-            elif opcion == "5":
+            elif self.opcion == "5":
                 print("Opción 5 seleccionada: Participar en conversaciones grupales")
                 
-                # SUBMENU CON OPCIONES DE GRUPOS ============================================================================================================================
+                # SUBMENU CON self.OPCIONES DE GRUPOS ============================================================================================================================
                 utils.mostrar_menu_grupos()
-                opcion = await ainput("\nIngresa tu opción: ")
+                self.opcion = await ainput("\nIngresa tu opción: ")
 
                 # Funcion para crear una sala de chat ========================================================================================================================
-                if opcion == "1":
+                if self.opcion == "1":
                     print("Opción 1 seleccionada: Crear una sala de chat")
 
                     room = input("Ingresa el nombre de la sala de chat: ")
@@ -447,35 +450,35 @@ class Cliente(slixmpp.ClientXMPP):
                     await self.create_chat_room(roomName)
 
                 # Funcion para unirse a una sala de chat existente ==========================================================================================================
-                elif opcion == "2":
+                elif self.opcion == "2":
                     print("Opción 2 seleccionada: Unirse a una sala de chat existente")
                     room = input("Ingresa el nombre de la sala de chat: ")
                     await self.join_chat_room(room)
                     
                 # Funcion para mostrar todas las salas de chat existentes ==================================================================================================
-                elif opcion == "3":
+                elif self.opcion == "3":
                     print("Opción 3 seleccionada: Mostrar todas las salas de chat existentes")
                     await self.show_all_rooms()
                     
                 # Funcion para regresar ====================================================================================================================================
-                elif opcion == "4":
+                elif self.opcion == "4":
                     print("Opción 4 seleccionada: Regresar")
                     pass
 
             # Funcion para definir mensaje de presencia ====================================================================================================================
-            elif opcion == "6":
+            elif self.opcion == "6":
                 print("Opción 6 seleccionada: Definir mensaje de presencia")
                 await self.change_presece()
 
             # Funcion para enviar archivos ====================================================================================================================================
-            elif opcion == "7":
+            elif self.opcion == "7":
                 print("Opción 7 seleccionada: Enviar archivos")
                 user = input("Ingresa el JID del usuario al que deseas enviar el archivo: ")
                 path = input("Ingresa la ruta del archivo que deseas enviar: ")
                 await self.send_file(user, path)
         
             # Funcion para cerrar sesion ====================================================================================================================================
-            elif opcion == "8":
+            elif self.opcion == "8":
                 print("Opción 8 seleccionada: Cerrar sesion")
                 self.disconnect()
                 self.is_connected = False
