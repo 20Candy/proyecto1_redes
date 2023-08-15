@@ -21,7 +21,7 @@ XMPP
 
 ## Características 📋
 
-Este cliente posee las siguientes implementacion
+Este cliente posee las siguientes implementaciones:
 
 - [X] Registrarse con una cuenta nueva.
 - [X]  Iniciar sesión con una cuenta existente.
@@ -38,6 +38,19 @@ Este cliente posee las siguientes implementacion
 - [X] Crear mensaje de presencia.
 - [X] Enviar/Recibir notificaciones.
 - [X] Enviar/Recibir archivos.
+
+
+## Dificultades 📋
+
+Considero que la parte más complicada de este proyecto fue el envío de archivos. El último método implementado fue utilizar Base64, el cual resultó menos difícil que otros métodos probados. Asimismo, la asincronicidad resultó un poco difícil al principio, pero luego de comprender su funcionamiento, fue más sencillo de implementar para el resto de las funcionalidades.
+
+
+## Lecciones Aprendidas 📋
+
+Dentro de las lecciones aprendidas en este proyecto se encuentran:
+- El uso de un protocolo existente, como es XMPP.
+- La comprensión y aplicación de la programación asincrónica, requerida para el funcionamiento del cliente.
+- La importancia de leer la documentación previo a iniciar el desarrollo. 
 
 ## Video 🎥
 https://youtu.be/NuZOVoRBlpQ
