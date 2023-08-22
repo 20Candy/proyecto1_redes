@@ -52,8 +52,9 @@ Dentro de las lecciones aprendidas en este proyecto se encuentran:
 - La comprensión y aplicación de la programación asincrónica, requerida para el funcionamiento del cliente.
 - La importancia de leer la documentación previo a iniciar el desarrollo. 
 
-## Video 🎥
-https://youtu.be/NuZOVoRBlpQ
+## Video y Presentación 🎥
+* **Video** - [video](https://youtu.be/NuZOVoRBlpQ)
+* **Presentación** - [presetanción](https://www.canva.com/design/DAFsTVdVD3c/KXK7Gj_frFHv8KQU6glwxA/edit?utm_content=DAFsTVdVD3c&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ## Autores ✒️
 
